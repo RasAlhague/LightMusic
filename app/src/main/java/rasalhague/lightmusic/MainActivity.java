@@ -9,8 +9,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import com.vk.sdk.*;
@@ -26,8 +24,6 @@ public class MainActivity extends ActionBarActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        final Context context = this;
 
         VKUIHelper.onCreate(this);
         VKSdk.initialize(new VKSdkListener()
@@ -53,8 +49,9 @@ public class MainActivity extends ActionBarActivity
             @Override
             public void onReceiveNewToken(VKAccessToken newToken)
             {
-                System.out.println(newToken);
-                LightIntent.startActionLightListening(context);
+                LightIntent.startActionLightListening(MainActivity.this);
+                //                LightManager.getInstance().initialize(MainActivity.this);
+                //                startService(new Intent(MainActivity.this, LightMusicService.class));
             }
 
             @Override
@@ -66,8 +63,17 @@ public class MainActivity extends ActionBarActivity
 
         VKSdk.authorize(sMyScope);
 
+        configureSharedPreferencesManager(); //first
+
         configureSensorValueTextView();
         configureThresholdSlider();
+        fillCurrentThresholdValueTextView();
+    }
+
+    private void configureSharedPreferencesManager()
+    {
+        SharedPreferencesHolder.getInstance()
+                                .initialize(getSharedPreferences(SharedPreferencesHolder.PREFS_NAME, MODE_PRIVATE));
     }
 
     private void configureSensorValueTextView()
@@ -94,9 +100,21 @@ public class MainActivity extends ActionBarActivity
     private void configureThresholdSlider()
     {
         SeekBar thresholdSlider = (SeekBar) findViewById(R.id.threshold_bar);
-        TextView thresholdValueTextView = (TextView) findViewById(R.id.threshold_value);
+        TextView thresholdValueTextView = (TextView) findViewById(R.id.slider_value);
 
-        ThresholdSlider.getInstance().initialize(thresholdSlider, thresholdValueTextView);
+        int threshold = SharedPreferencesHolder.getInstance()
+                                               .getSharedPreferences()
+                                               .getInt(SharedPreferencesHolder.CURRENT_THRESHOLD, 100);
+        ThresholdSlider.getInstance().initialize(thresholdSlider, thresholdValueTextView, threshold);
+    }
+
+    private void fillCurrentThresholdValueTextView()
+    {
+        TextView currentThresholdValueTextView = (TextView) findViewById(R.id.current_threshold_value);
+        int threshold = SharedPreferencesHolder.getInstance()
+                                               .getSharedPreferences()
+                                               .getInt(SharedPreferencesHolder.CURRENT_THRESHOLD, 100);
+        currentThresholdValueTextView.setText("Current threshold: " + String.valueOf(threshold));
     }
 
     @Override
@@ -118,30 +136,5 @@ public class MainActivity extends ActionBarActivity
     {
         super.onActivityResult(requestCode, resultCode, data);
         VKUIHelper.onActivityResult(this, requestCode, resultCode, data);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings)
-        {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }

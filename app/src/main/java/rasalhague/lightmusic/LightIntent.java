@@ -8,14 +8,17 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.PowerManager;
 import rasalhague.lightmusic.audio.VkAudioManager;
 
 public class LightIntent extends IntentService implements SensorEventListener
 {
-    private SensorManager     mSensorManager;
-    private Sensor            mLight;
-    private ScreenOffReceiver screenOffReceiver;
+    private SensorManager mSensorManager;
+    private Sensor        mLight;
     private VkAudioManager vkAudioManager = new VkAudioManager(this);
+    private int threshold;
+
+    private static Context contextX;
 
     private static final String ACTION_LightListening = "rasalhague.lightsensormusictrigger.action.LightListening";
 
@@ -24,6 +27,8 @@ public class LightIntent extends IntentService implements SensorEventListener
         Intent intent = new Intent(context, LightIntent.class);
         intent.setAction(ACTION_LightListening);
         context.startService(intent);
+
+        contextX = context;
     }
 
     public LightIntent()
@@ -36,7 +41,8 @@ public class LightIntent extends IntentService implements SensorEventListener
     {
         float lightLevel = event.values[0];
 
-        if (lightLevel > ThresholdSlider.getInstance().getCurrentThreshold())
+        //        if (lightLevel > ThresholdSlider.getInstance().getCurrentThreshold())
+        if (lightLevel > threshold)
         {
             vkAudioManager.play();
         }
@@ -69,8 +75,17 @@ public class LightIntent extends IntentService implements SensorEventListener
 
     private void handleActionLightListening()
     {
+        initThreshold();
         initSensors();
         registerScreenOffReceiver();
+        activateWakeLock();
+    }
+
+    private void initThreshold()
+    {
+        threshold = SharedPreferencesHolder.getInstance()
+                                           .getSharedPreferences()
+                                           .getInt(SharedPreferencesHolder.CURRENT_THRESHOLD, 100);
     }
 
     private void initSensors()
@@ -83,7 +98,14 @@ public class LightIntent extends IntentService implements SensorEventListener
 
     private void registerScreenOffReceiver()
     {
-        screenOffReceiver = new ScreenOffReceiver(mSensorManager, mLight, this);
-        getApplicationContext().registerReceiver(screenOffReceiver, new IntentFilter(Intent.ACTION_SCREEN_OFF));
+        ScreenOffReceiver screenOffReceiver = new ScreenOffReceiver(mSensorManager, mLight, this);
+        contextX.registerReceiver(screenOffReceiver, new IntentFilter(Intent.ACTION_SCREEN_OFF));
+    }
+
+    private void activateWakeLock()
+    {
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Tag");
+        wl.acquire();
     }
 }

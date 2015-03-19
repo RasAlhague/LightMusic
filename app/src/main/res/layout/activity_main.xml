@@ -20,14 +20,22 @@
             android:layout_alignParentLeft = "true"
             android:layout_alignParentStart = "true"
             android:layout_alignParentRight = "true"
-            android:layout_alignParentEnd = "true" android:max = "200" android:splitTrack = "false"
+            android:layout_alignParentEnd = "true" android:max = "300" android:splitTrack = "false"
             android:mirrorForRtl = "false" android:indeterminate = "false" android:progress = "100"/>
-    <TextView android:text = "Threshold value: "
+    <TextView android:text = "Slider value: "
               android:layout_width = "wrap_content"
               android:layout_height = "wrap_content"
-              android:id = "@+id/threshold_value"
+              android:id = "@+id/slider_value"
               android:textSize = "20dp"
               android:layout_below = "@+id/threshold_bar"
+              android:layout_alignParentLeft = "true"
+              android:layout_alignParentStart = "true"/>
+    <TextView android:text = "Current threshold value: "
+              android:layout_width = "wrap_content"
+              android:layout_height = "wrap_content"
+              android:id = "@+id/current_threshold_value"
+              android:textSize = "20dp"
+              android:layout_below = "@+id/slider_value"
               android:layout_alignParentLeft = "true"
               android:layout_alignParentStart = "true"/>
 

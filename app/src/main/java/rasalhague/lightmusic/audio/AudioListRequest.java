@@ -38,7 +38,7 @@ public class AudioListRequest
                                                       VKApiConst.VERSION,
                                                       AUDIO_GET_VERSION);
 
-//        VKRequest request = new VKRequest("audio.get", vkParameters);
+        //        VKRequest request = new VKRequest("audio.get", vkParameters);
         VKRequest request = new VKRequest("audio.getRecommendations", vkParameters);
         request.executeWithListener(new VKRequest.VKRequestListener()
         {
@@ -64,7 +64,6 @@ public class AudioListRequest
             @Override
             public void onProgress(VKRequest.VKProgressType progressType, long bytesLoaded, long bytesTotal)
             {
-                super.onProgress(progressType, bytesLoaded, bytesTotal);
             }
         });
     }
